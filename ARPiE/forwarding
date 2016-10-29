@@ -1,0 +1,88 @@
+#! /bin/bash
+file="/home/pi/ARPiE/Config/sysctl.conf"
+tofile="/etc/sysctl.conf"
+oldfile="/home/pi/ARPiE/Config/sysctl.conf.disable"
+logforwarding="/home/pi/ARPiE/Logs/port_forwarding.log"
+if [[ ! -e $logforwarding ]]; then
+	touch $logforwarding
+fi
+#Disable Port Forwarding if Enabled
+if [[ -e $oldfile ]]; then
+	mv $oldfile $tofile
+	sudo sysctl --system
+	echo "Date:"$( date )" - Port Forwarding Manually Disabled " >> "$logforwarding"
+	exit 0
+fi
+if [[ ! -e $file ]]; then
+	touch $file
+	echo '#' >> "$file"
+	echo '# /etc/sysctl.conf - Configuration file for setting system variables' >> "$file"
+	echo '# See /etc/sysctl.d/ for additional system variables.' >> "$file"
+	echo '# See sysctl.conf (5) for information.' >> "$file"
+	echo '#' >> "$file"
+	echo '' >> "$file"
+	echo '#kernel.domainname = example.com' >> "$file"
+	echo '' >> "$file"
+	echo '# Uncomment the following to stop low-level messages on console' >> "$file"
+	echo '#kernel.printk = 3 4 1 3' >> "$file"
+	echo '' >> "$file"
+	echo '##############################################################3' >> "$file"
+	echo '# Functions previously found in netbase' >> "$file"
+	echo '#' >> "$file"
+	echo '' >> "$file"
+	echo '# Uncomment the next two lines to enable Spoof protection (reverse-path filter)' >> "$file"
+	echo '# Turn on Source Address Verification in all interfaces to' >> "$file"
+	echo '# prevent some spoofing attacks' >> "$file"
+	echo '#net.ipv4.conf.default.rp_filter=1' >> "$file"
+	echo '#net.ipv4.conf.all.rp_filter=1' >> "$file"
+	echo '' >> "$file"
+	echo '# Uncomment the next line to enable TCP/IP SYN cookies' >> "$file"
+	echo '# See http://lwn.net/Articles/277146/' >> "$file"
+	echo '# Note: This may impact IPv6 TCP sessions too' >> "$file"
+	echo '#net.ipv4.tcp_syncookies=1' >> "$file"
+	echo '' >> "$file"
+	echo '# Uncomment the next line to enable packet forwarding for IPv4' >> "$file"
+	echo 'net.ipv4.ip_forward=1' >> "$file"
+	echo '' >> "$file"
+	echo '# Uncomment the next line to enable packet forwarding for IPv6' >> "$file"
+	echo '#  Enabling this option disables Stateless Address Autoconfiguration' >> "$file"
+	echo '#  based on Router Advertisements for this host' >> "$file"
+	echo '#net.ipv6.conf.all.forwarding=1' >> "$file"
+	echo '' >> "$file"
+	echo '' >> "$file"
+	echo '###################################################################' >> "$file"
+	echo '# Additional settings - these settings can improve the network' >> "$file"
+	echo '# security of the host and prevent against some network attacks' >> "$file"
+	echo '# including spoofing attacks and man in the middle attacks through' >> "$file"
+	echo '# redirection. Some network environments, however, require that these' >> "$file"
+	echo '# settings are disabled so review and enable them as needed.' >> "$file"
+	echo '#' >> "$file"
+	echo '# Do not accept ICMP redirects (prevent MITM attacks)' >> "$file"
+	echo '#net.ipv4.conf.all.accept_redirects = 0' >> "$file"
+	echo '#net.ipv6.conf.all.accept_redirects = 0' >> "$file"
+	echo '# _or_' >> "$file"
+	echo '# Accept ICMP redirects only for gateways listed in our default' >> "$file"
+	echo '# gateway list (enabled by default)' >> "$file"
+	echo '# net.ipv4.conf.all.secure_redirects = 1' >> "$file"
+	echo '#' >> "$file"
+	echo '# Do not send ICMP redirects (we are not a router)' >> "$file"
+	echo '#net.ipv4.conf.all.send_redirects = 0' >> "$file"
+	echo '#' >> "$file"
+	echo '# Do not accept IP source route packets (we are not a router)' >> "$file"
+	echo '#net.ipv4.conf.all.accept_source_route = 0' >> "$file"
+	echo '#net.ipv6.conf.all.accept_source_route = 0' >> "$file"
+	echo '#' >> "$file"
+	echo '# Log Martian Packets' >> "$file"
+	echo '#net.ipv4.conf.all.log_martians = 1' >> "$file"
+	echo '#' >> "$file"
+fi
+
+sudo cp $tofile $oldfile
+sudo cp $file $tofile
+echo "Date:"$( date )" - Port Forwarding Manually Enabled" >> "$logforwarding"
+sudo sysctl --system
+sleep 7200
+sudo mv $oldfile $tofile
+sudo sysctl --system
+echo "Date:"$( date )" - Port Forwarding Automatically Disabled" >> "$logforwarding"
+exit 0

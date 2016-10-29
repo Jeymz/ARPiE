@@ -1,0 +1,21 @@
+#! /bin/bash
+logeth0="/home/pi/ARPiE/Logs/eth0.log"
+if [[ ! -e $logeth0 ]]; then
+	touch $logeth0
+fi
+echo "Date:"$( date )" - Syetem recovered from reboot" >> "$logeth0"
+while :
+do
+	while ! ping -c1 10.100.100.11 &>/dev/null
+	do
+		echo "Date:"$( date )" - eth0:Down" >> "$logeth0"
+		sudo ifdown eth0
+		sleep 30
+		sudo ifup eth0
+		sleep 90
+	done
+echo "Date:"$( date )" - eth0:Up" >> "$logeth0"
+sleep 120
+#Execute mbtool scan, and note dashboard log
+#Execute size check on log file
+done

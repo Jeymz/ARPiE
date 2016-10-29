@@ -1,0 +1,25 @@
+#! /bin/bash
+#Helper Script is setup to enable wifi AP when help is needed
+#Helper Script also scans for devices in need of help
+helplog="/home/pi/ARPiE/Logs/help.log"
+helperlog="/home/pi/ARPiE/Logs/helper.log"
+wifiscan="/home/pi/ARPiE/Logs/wifiscan.log"
+if [[ -e $helplog ]]; then
+	echo "Date:"$( date )" - Help Needed On This Device" >> "$helplog"
+else
+	if [[ -e $wifiscan ]]; then
+		rm $wifiscan
+	else
+	sudo iwlist wlan0 scanning | egrep 'ESSID' >> "$wifiscan"
+	while read p; do
+		if [[ $p = * ]]; then
+			helpneeded=$p
+			if [[ -z "$helpneeded" ]]; then
+				if [[ -e $helperlog ]]; then
+					rm $helperlog
+				fi
+			fi
+			echo "Date:"$( date )" - Downed Devices:"$p >> "$helperlog"
+		fi
+	done <$wifiscan
+fi

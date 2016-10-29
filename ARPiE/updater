@@ -1,0 +1,23 @@
+#! /bin/bash
+#Run four times a day to check for updates
+wget http://update.jeymz.xyz/serverversion -O /home/pi/ARPiE/payload/serverversion
+serverfile="/home/pi/ARPiE/payload/serverversion"
+localfile="/home/pi/ARPiE/Config/Version"
+updatelog="/home/pi/ARPiE/Logs/update.log"
+configchecker="/home/pi/ARPiE/Logs/updating.cfg"
+ServerVersion=`cat $serverfile`
+LocalVersion=`cat $localfile`
+if [[ ! -s $serverfile ]]; then
+	exit 0
+fi
+if [[ $LocalVersion = $ServerVersion ]]; then
+	echo 'Date:'$( date )' - Local Version: '$LocalVersion' - Server Version: '$ServerVersion' - No Update Required ' >> "$updatelog"
+else
+	echo $( date ) >> "$configchecker"
+	echo 'Date:'$( date )' - Local Version: '$LocalVersion' - Server Version: '$ServerVersion' - Initiaitng Update Now ' >> "$updatelog" 
+	wget http://update.jeymz.xyz.local/$ServerVersion.upd -O /home/pi/ARPiE/payload/$ServerVersion.tar.gz
+	updater="/home/pi/ARPiE/payload/"
+	tar -xzvf $updater$ServerVersion.tar.gz -C $updater
+	bash $updater$ServerVersion
+fi
+exit 0

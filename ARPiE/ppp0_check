@@ -1,0 +1,52 @@
+#! /bin/bash
+#Reboot script for logging and rebooting ppp0 interface
+logppp0="/home/pi/ARPiE/Logs/ppp0.log"
+if [[ ! -e $logppp0 ]]; then
+	touch $logppp0
+fi
+echo "Date:"$( date )" - Reboot Completed" >> "$logppp0"
+count="0"
+loghelp="/home/pi/ARPiE/Logs/help.log"
+while :
+do
+	if sudo ifconfig ppp0 > /dev/null; then
+		if [[ $count != "0" ]]; then
+			echo "Date:"$( date )" - ppp0:Up - Count:"$count >> "$logppp0"
+		fi
+		count="0"
+		if [[ -e $loghelp ]]; then
+			rm $loghelp
+		fi
+	else
+		if [[ $count = "0" ]]; then
+			echo "Date:"$( date )" - ppp0:Down - Count:1" >> "$logppp0"
+			sudo ifdown ppp0
+			sleep 10
+			sudo ifup ppp0
+			count="1"
+		elif [[ $count = "1" ]]; then
+			echo "Date:"$( date )" - ppp0:Down - Count:2" >> "$logppp0"
+			sudo ifdown ppp0
+			sleep 10
+			sudo ifup ppp0
+			count="2"
+		elif [[ $count = "2" ]]; then
+			if [[ -e $loghelp ]]; then
+				echo "Date:"$( date )" - Status:Unresolved" >> "$loghelp"
+				echo "Date:"$( date )" - Attempting Reconnect on ppp0" >> "$loghelp"
+				sudo ifdown ppp0
+				sleep 10
+				sudo ifup ppp0
+			else
+				echo "Date:"$( date )" - ppp0:Down - Count:3" >> "$logppp0"
+				echo "Date:"$( date )" - Initiating reboot"
+				touch $loghelp
+				echo "Date:"$( date )" - ppp0:Down" >> "$loghelp"
+				sudo reboot
+			fi
+		fi
+	fi
+	sleep 120
+#Execute size check on log file
+done
+

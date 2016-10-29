@@ -1,0 +1,26 @@
+#! /bin/bash
+# Reboot Script for Network Interfaces
+#USB Modeswitch for E303
+sudo usb_modeswitch -v 0x12d1 -p 0x1f01 -V 0x12d1 -P 0x1001 -M "55534243000000000000000000000611060000000000000000000000000000"
+#USB Modeswitch for E173u-2
+sudo usb_modeswitch -v 0x12d1 -p 0x1446 -V 0x12d1 -P 0x140c -M "55534243123456780000000000000011062000000100000000000000000000"
+#Initial Bootup Sudo Requests
+sleep 10
+sudo ifdown ppp0
+sleep 10
+sudo ifup ppp0
+sleep 10
+sudo ifdown eth0
+sleep 10
+sudo ifup eth0
+sleep 10
+#IP Table Configuration for port forwarding
+#Port forwarding will only be active when you run 
+#Port forwarding script
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+sudo iptables -A FORWARD -i eth0 -o wlan0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+sudo iptables -A FORWARD -i wlan0 -o eth0 -j ACCEPT
+sudo iptables -t nat -A POSTROUTING -o ppp0 -j MASQUERADE
+sudo iptables -t nat -A PREROUTING -i ppp0 -p tcp --dport 5900 -j DNAT --to-destination 10.100.100.11
+sudo iptables -A FORWARD -i ppp0 -o eth0 -p tcp --dport 5900 -j ACCEPT
+exit 0
